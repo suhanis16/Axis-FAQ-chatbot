@@ -1,0 +1,1 @@
+%pip install langchain langchain-community sentence_transformers faiss-cpu ctransformers Transformers wandb python-docx
