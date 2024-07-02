@@ -1,26 +1,17 @@
-# from langchain.document_loaders import DirectoryLoader, TextLoader
+import warnings
+warnings.filterwarnings("ignore")
+
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.vectorstores import FAISS
-from langchain.llms import CTransformers
-from langchain import PromptTemplate
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_community.llms import CTransformers
+from langchain_core.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 
-from IPython.display import display, HTML
 import json
 import time
 import pathlib
-
-# from langchain.document_loaders import CSVLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.vectorstores import FAISS
 import pandas as pd
-from langchain.docstore.document import Document
-
-
-import pandas as pd
-import pathlib
 import docx
 from langchain.docstore.document import Document
 import os
@@ -31,7 +22,9 @@ def read_docx(file_path):
 
 def load_all_files(directory_path):
     data = []
+    # print(f"Loading files from directory: {directory_path}")
     for file_path in pathlib.Path(directory_path).glob("*"):
+        # print(f"Found file: {file_path}")
         if file_path.suffix == '.csv':
             df = pd.read_csv(file_path)
             for _, row in df.iterrows():
@@ -49,45 +42,34 @@ def load_all_files(directory_path):
             for _, row in df.iterrows():
                 content = " ".join(str(value) for value in row.values)
                 data.append(Document(page_content=content))
+    # print(f"Total documents loaded: {len(data)}")
     return data
 
-
 def interpret_files(documents):
-    # Interpret information in the CSV file
     splitter = RecursiveCharacterTextSplitter(chunk_size=512, chunk_overlap=50)
     texts = splitter.split_documents(documents)
+    # print(f"Total texts generated: {len(texts)}")
     return texts
 
 def create_embeddings():
-    # Create embeddings
     embeddings = HuggingFaceEmbeddings(
         model_name="sentence-transformers/all-MiniLM-L6-v2",
         model_kwargs={'device': 'cpu'}
     )
     return embeddings
 
-def save(texts,embeddings):
-    # Create and save the local database
+def save(texts, embeddings):
     db = FAISS.from_documents(texts, embeddings)
     db.save_local("faiss")
 
-def load_llm(model_name,model_path):
+def load_llm(model_name, model_path):
     if model_name == "llama":
-        # load the language model
         llm = CTransformers(model=model_path,
                             model_type='llama',
                             config={'max_new_tokens': 256, 'temperature': 0.01})
-        
     return llm
-                            
 
-# load the interpreted information from the local database
-# embeddings = HuggingFaceEmbeddings(
-#     model_name="sentence-transformers/all-MiniLM-L6-v2",
-#     model_kwargs={'device': 'cpu'})
-
-def retrieve_docs(embeddings,llm):
-    # prepare the template we will use when prompting the AI
+def retrieve_docs(embeddings, llm):
     template = """Use the following pieces of information to answer the user's question.
     If you don't know the answer, just say that you don't know, don't try to make up an answer.
     Context: {context}
@@ -96,22 +78,18 @@ def retrieve_docs(embeddings,llm):
     Helpful answer:
     """
 
-    db = FAISS.load_local("faiss", embeddings,allow_dangerous_deserialization=True)
-
-    # prepare a version of the llm pre-loaded with the local content
+    db = FAISS.load_local("faiss", embeddings, allow_dangerous_deserialization=True)
     retriever = db.as_retriever(search_kwargs={'k': 2})
     prompt = PromptTemplate(
         template=template,
         input_variables=['context', 'question'])
 
     QA_LLM = RetrievalQA.from_chain_type(llm=llm,
-                                        chain_type='stuff',
-                                        retriever=retriever,
-                                        return_source_documents=True,
-                                        chain_type_kwargs={'prompt': prompt})
-    
+                                         chain_type='stuff',
+                                         retriever=retriever,
+                                         return_source_documents=True,
+                                         chain_type_kwargs={'prompt': prompt})
     return QA_LLM
-
 
 def query(model, question):
     model_path = model.combine_documents_chain.llm_chain.llm.model
@@ -124,33 +102,31 @@ def query(model, question):
     print(f'Question: {question}')
     print(f'Answer: \n {response}')
 
-
 def main():
-
     data_path = "D:\Axis-FAQ-chatbot\Data"
     documents = load_all_files(data_path)
     texts = interpret_files(documents)
     embeddings = create_embeddings()
-    save(texts,embeddings)
 
-    model_path = "D:\Axis\models\llama-2-7b-chat.ggmlv3.q8_0.bin"
+    if not texts:
+        print("No texts found to embed. Please check your data path.")
+        return
+
+    if not embeddings:
+        print("Embeddings could not be created. Please check your model path.")
+        return
+
+    save(texts, embeddings)
+
+    model_path = "D:\Axis-FAQ-chatbot\models\llama-2-7b-chat.ggmlv3.q8_0.bin"
 
     llm = load_llm("llama", model_path)
-    QA_LLM = retrieve_docs(embeddings,llm)
+    QA_LLM = retrieve_docs(embeddings, llm)
 
     user_input = input("What is your question? \n")
 
     print("Retrieving answer...")
-    # Show running time
-    # print(time.time())
+    return query(QA_LLM, user_input)
 
-    # print(query(QA_LLM,user_input))
-
-
-    return query(QA_LLM,user_input)
-
-
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
-
-
