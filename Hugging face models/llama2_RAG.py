@@ -120,10 +120,9 @@ def query(model, question):
     output = model({'query': question})
     response = output["result"]
     time_elapsed = time.time() - time_start
-    display(HTML(f'<code>{model_name} response time: {time_elapsed:.02f} sec</code>'))
-    display(HTML(f'<strong>Question:</strong> {question}'))    
-    display(HTML(f'<strong>Answer:</strong> {response}'))
-
+    print(f'<code>{model_name} response time: {time_elapsed:.02f} sec</code>')
+    print(f'<strong>Question:</strong> {question}')
+    print(f'<strong>Answer:</strong> {response}')
 
 
 def main():
@@ -143,12 +142,12 @@ def main():
 
     print("Retrieving answer...")
     # Show running time
-    print(time.time())
+    # print(time.time())
 
-    print(query(QA_LLM,user_input))
+    # print(query(QA_LLM,user_input))
 
 
-    # return query(QA_LLM,user_input)
+    return query(QA_LLM,user_input)
 
 
 if __name__=="__main__":
