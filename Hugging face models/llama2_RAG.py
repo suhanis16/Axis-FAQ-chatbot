@@ -102,19 +102,38 @@ def query(model, question):
     print(f'Question: {question}')
     print(f'Answer: \n {response}')
 
-def main():
+# def main():
+#     data_path = "D:\Axis-FAQ-chatbot\Data"
+#     documents = load_all_files(data_path)
+#     texts = interpret_files(documents)
+#     embeddings = create_embeddings()
+
+#     if not texts:
+#         print("No texts found to embed. Please check your data path.")
+#         return
+
+#     if not embeddings:
+#         print("Embeddings could not be created. Please check your model path.")
+#         return
+
+#     save(texts, embeddings)
+
+#     model_path = "D:\Axis-FAQ-chatbot\models\llama-2-7b-chat.ggmlv3.q8_0.bin"
+
+#     llm = load_llm("llama", model_path)
+#     QA_LLM = retrieve_docs(embeddings, llm)
+
+#     user_input = input("What is your question? \n")
+
+#     print("Retrieving answer...")
+#     return query(QA_LLM, user_input)
+
+
+if __name__ == "__main__":
     data_path = "D:\Axis-FAQ-chatbot\Data"
     documents = load_all_files(data_path)
     texts = interpret_files(documents)
     embeddings = create_embeddings()
-
-    if not texts:
-        print("No texts found to embed. Please check your data path.")
-        return
-
-    if not embeddings:
-        print("Embeddings could not be created. Please check your model path.")
-        return
 
     save(texts, embeddings)
 
@@ -124,9 +143,4 @@ def main():
     QA_LLM = retrieve_docs(embeddings, llm)
 
     user_input = input("What is your question? \n")
-
-    print("Retrieving answer...")
-    return query(QA_LLM, user_input)
-
-if __name__ == "__main__":
-    main()
+    query(QA_LLM, user_input)
