@@ -1,2 +1,5 @@
 Data
 models
+chroma
+test_index
+faiss
