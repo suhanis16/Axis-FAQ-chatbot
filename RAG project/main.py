@@ -27,7 +27,7 @@ def main(directory, query, word_limit=None):
     return answer, similar_documents
 
 if __name__ == "__main__":
-    load_dotenv()
+    # load_dotenv()
     directory = input("Enter the path to your directory or file: ")
     query = input("Enter your query: ")
     
