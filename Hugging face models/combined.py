@@ -2,12 +2,10 @@ import warnings
 warnings.filterwarnings("ignore")
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.vectorstores import Chroma
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from langchain import HuggingFacePipeline
-from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
 import torch
@@ -15,7 +13,6 @@ import pandas as pd
 import pathlib
 import docx
 from langchain.docstore.document import Document
-import os
 import time
 
 def read_docx(file_path):
@@ -130,58 +127,6 @@ def retrieve_docs(embeddings, llm):
         print("Chain created")
     return chain
 
-
-
-
-
-
-
-    # template = """Use the following pieces of information to answer the user's question.
-    # If you don't know the answer, just say that you don't know, don't try to make up an answer.
-    # {context}
-    # Question: {question}
-    # Answer:"""
-
-    # db = Chroma(persist_directory="test_index", embedding_function = embeddings)
-    
-    # retriever = db.as_retriever(search_kwargs={'k': 2})
-    # prompt = PromptTemplate(
-    # template=template, input_variables=["context","question"] # Change 'Context' to 'context' and 'Question' to 'question'
-    # )
-
-    # print("Sending the chain")
-    # # Define the QNA chain
-    # QA_LLM = RetrievalQA.from_chain_type(llm=llm,
-    #                                         chain_type='stuff',
-    #                                         retriever=retriever,
-    #                                         return_source_documents=True,
-    #                                         chain_type_kwargs={'prompt': prompt})
-    # return QA_LLM
-
-# # Load the database
-# vectordb = Chroma(persist_directory="test_index", embedding_function = embeddings)
-
-# # Load the retriver
-# retriever = vectordb.as_retriever(search_kwargs = {"k" : 3})
-
-# qna_prompt_template= """Use the following pieces of information to answer the user's question.
-# If you don't know the answer, just say that you don't know, don't try to make up an answer.
-# {context}
-# Question: {question}
-# Answer:"""
-
-# PROMPT = PromptTemplate(
-#    template=qna_prompt_template, input_variables=["context","question"] # Change 'Context' to 'context' and 'Question' to 'question'
-# )
-
-# # Define the QNA chain
-# chain = RetrievalQA.from_chain_type(llm=llm,
-#                                          chain_type='stuff',
-#                                          retriever=retriever,
-#                                          return_source_documents=True,
-#                                          chain_type_kwargs={'prompt': PROMPT})
-
-
 def answer_question(chain, question):
     time_start = time.time()
     output = chain({'query': question})
@@ -197,11 +142,6 @@ def answer_question(chain, question):
 
     answer = cleaned_response.strip()
     return response
-
-# question = input("Please enter your question: ")
-# answer = answer_question(question,QA_LLM)
-
-
 
 if __name__ == "__main__":
     data_path = "/kaggle/input/axisfaq-data"

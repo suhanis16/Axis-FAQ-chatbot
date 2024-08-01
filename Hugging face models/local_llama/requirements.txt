@@ -1,0 +1,8 @@
+langchain
+langchain_huggingface
+langchain_community
+langchain_core
+transformers
+faiss-cpu
+pandas
+python-docx

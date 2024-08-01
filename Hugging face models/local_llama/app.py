@@ -31,6 +31,5 @@ llm = load_llm("llama", model_path)
 QA_LLM = retrieve_docs(embeddings, llm)
 
 
-
 if __name__ == '__main__':
     app.run(debug=True)

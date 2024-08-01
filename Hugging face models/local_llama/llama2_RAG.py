@@ -7,14 +7,11 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.llms import CTransformers
 from langchain_core.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
-
-import json
 import time
 import pathlib
 import pandas as pd
 import docx
 from langchain.docstore.document import Document
-import os
 
 def read_docx(file_path):
     doc = docx.Document(file_path)
@@ -92,42 +89,13 @@ def retrieve_docs(embeddings, llm):
     return QA_LLM
 
 def query(model, question):
-    model_path = model.combine_documents_chain.llm_chain.llm.model
-    model_name = pathlib.Path(model_path).name
     time_start = time.time()
     output = model({'query': question})
     response = output["result"]
     time_elapsed = time.time() - time_start
-    print(f'{model_name} response time: {time_elapsed:.02f} sec')
+    print(f'response time: {time_elapsed:.02f} sec')
     print(f'Question: {question}')
     print(f'Answer: \n {response}')
-
-# def main():
-#     data_path = "D:\Axis-FAQ-chatbot\Data"
-#     documents = load_all_files(data_path)
-#     texts = interpret_files(documents)
-#     embeddings = create_embeddings()
-
-#     if not texts:
-#         print("No texts found to embed. Please check your data path.")
-#         return
-
-#     if not embeddings:
-#         print("Embeddings could not be created. Please check your model path.")
-#         return
-
-#     save(texts, embeddings)
-
-#     model_path = "D:\Axis-FAQ-chatbot\models\llama-2-7b-chat.ggmlv3.q8_0.bin"
-
-#     llm = load_llm("llama", model_path)
-#     QA_LLM = retrieve_docs(embeddings, llm)
-
-#     user_input = input("What is your question? \n")
-
-#     print("Retrieving answer...")
-#     return query(QA_LLM, user_input)
-
 
 if __name__ == "__main__":
     data_path = "D:\Axis-FAQ-chatbot\Data"
